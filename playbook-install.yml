@@ -19,6 +19,12 @@
     file:
       path: "/home/pacs/{{pac}}/users/{{user}}/etc"
       state: directory
+  - name: create directory bin
+    become: yes
+    become_user: "{{pac}}-{{user}}"
+    file:
+      path: "/home/pacs/{{pac}}/users/{{user}}/bin"
+      state: directory
   - name: create directory var/tmp
     become: yes
     become_user: "{{pac}}-{{user}}"
@@ -42,23 +48,41 @@
   ## install requirements
   #################################
 
+  - name: Install mongodb
+    import_tasks: tasks/hs_mongodb.yml
+
+  # TODO install rabbitmq
+
   ##################################
   ## install DATAGERRY
   ##################################
+  - name: download DATAGERRY release archive
+    become: yes
+    become_user: "{{pac}}-{{user}}"
+    unarchive:
+      src: https://files.datagerry.com/latest/targz/datagerry-{{datagerry_release}}.tar.gz
+      remote_src: yes
+      dest: /home/pacs/{{pac}}/users/{{user}}/var/tmp
+      creates: /home/pacs/{{pac}}/users/{{user}}/var/tmp/datagerry
 
-  # TODO
+  - name: copy datagerry binary
+    become: yes
+    become_user: "{{pac}}-{{user}}"
+    copy:
+      src: "/home/pacs/{{pac}}/users/{{user}}/var/tmp/datagerry/files/datagerry"
+      remote_src: yes
+      dest: "/home/pacs/{{pac}}/users/{{user}}/bin/datagerry"
 
   ##################################
   ## configuration
   ##################################
-
-  # TODO
-
-  ######################
-  ## initialise instance
-  ######################
-
-  # TODO
+  - name: copy datagerry config file
+    become: yes
+    become_user: "{{pac}}-{{user}}"
+    copy:
+      src: "/home/pacs/{{pac}}/users/{{user}}/var/tmp/datagerry/files/datagerry.conf"
+      remote_src: yes
+      dest: "/home/pacs/{{pac}}/users/{{user}}/etc/datagerry.conf"
 
   ########################
   ## setup the apache site

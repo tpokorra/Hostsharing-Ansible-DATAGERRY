@@ -1,0 +1,48 @@
+---
+#################################
+## setup the mongodb service
+#################################
+# see https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-debian-tarball/
+
+- name: download mongodb
+  become: yes
+  become_user: "{{pac}}-{{user}}"
+  unarchive:
+    src: https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-debian10-{{mongodb_version}}.tgz
+    remote_src: yes
+    dest: /home/pacs/{{pac}}/users/{{user}}/var/tmp
+    creates: /home/pacs/{{pac}}/users/{{user}}/var/tmp/mongodb-linux-x86_64-debian10-{{mongodb_version}}
+
+- name: create directory var/lib/mongo
+  become: yes
+  become_user: "{{pac}}-{{user}}"
+  file:
+    # this is where the data will be stored
+    path: "/home/pacs/{{pac}}/users/{{user}}/var/lib/mongo"
+    state: directory
+
+- name: create directory var/log
+  become: yes
+  become_user: "{{pac}}-{{user}}"
+  file:
+    path: "/home/pacs/{{pac}}/users/{{user}}/var/log"
+    state: directory
+
+- name: copy mongod binary
+  become: yes
+  become_user: "{{pac}}-{{user}}"
+  copy:
+    src: "/home/pacs/{{pac}}/users/{{user}}/var/tmp/mongodb-linux-x86_64-debian10-{{mongodb_version}}/bin/mongod"
+    remote_src: yes
+    dest: "/home/pacs/{{pac}}/users/{{user}}/bin/mongod"
+
+- name: upload mongod start script
+  become: yes
+  become_user: "{{pac}}-{{user}}"
+  template: dest="/home/pacs/{{pac}}/users/{{user}}/bin/start-mongod.sh" src="templates/start-mongod.sh" mode=0700
+- name: upload mongod stop script
+  become: yes
+  become_user: "{{pac}}-{{user}}"
+  template: dest="/home/pacs/{{pac}}/users/{{user}}/bin/stop-mongod.sh" src="templates/stop-mongod.sh" mode=0700
+
+

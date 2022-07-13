@@ -7,3 +7,6 @@ datagerry:
       domain: datagerry.example.org
       user: datagerry
       password: testpassw0rd_changeme
+
+      mongodb_version: "5.0.9"
+      datagerry_release: "1.7.2"
