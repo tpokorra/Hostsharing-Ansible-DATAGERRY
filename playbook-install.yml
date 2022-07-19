@@ -107,6 +107,10 @@
       src: "/home/pacs/{{pac}}/users/{{user}}/var/tmp/datagerry/files/datagerry.conf"
       remote_src: yes
       dest: "/home/pacs/{{pac}}/users/{{user}}/etc/datagerry.conf"
+  - name: upload cmdb config file
+    become: yes
+    become_user: "{{pac}}-{{user}}"
+    template: dest="/home/pacs/{{pac}}/users/{{user}}/etc" src="templates/cmdb.conf"
 
   ########################
   ## setup the apache site

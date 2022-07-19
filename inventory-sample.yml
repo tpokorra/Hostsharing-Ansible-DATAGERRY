@@ -9,8 +9,9 @@ datagerry:
       password: testpassw0rd_changeme
 
       http_port: "8080"
+      mongod_port: "27017"
       rabbitmq_port: "5672"
-      random_minute: 55
+      random_minute: "55"
 
       mongodb_version: "5.0.9"
       rabbitmq_version: "3.10.6"

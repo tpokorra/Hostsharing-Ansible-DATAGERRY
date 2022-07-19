@@ -10,3 +10,5 @@ export RABBITMQ_UPGRADE_LOG=/home/pacs/{{pac}}/users/{{user}}/var/rabbitmq/log
 export RABBITMQ_PLUGINS_EXPAND_DIR=/home/pacs/{{pac}}/users/{{user}}/var/rabbitmq/plugins
 
 /usr/lib/rabbitmq/bin/rabbitmq-server &
+
+sleep 10

@@ -50,10 +50,9 @@
     dest: /home/pacs/{{pac}}/users/{{user}}/.monitrc
     marker: "# {mark} ANSIBLE MANAGED BLOCK rabbitmq"
     block: |
-      check process rabbitmq with MATCHING rabbitmq
+      check process rabbitmq MATCHING "/usr/lib/erlang/erts-10.2.4/bin/beam"
         start program "/home/pacs/{{pac}}/users/{{user}}/bin/rabbitmq-start.sh"
         stop program "/home/pacs/{{pac}}/users/{{user}}/bin/rabbitmq-stop.sh"
-        if failed port {{rabbitmq_port}} type tcp then alert
         if failed port {{rabbitmq_port}} type tcp then restart
 
 
