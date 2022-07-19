@@ -148,7 +148,7 @@
       dest: /home/pacs/{{pac}}/users/{{user}}/.monitrc
       marker: "# {mark} ANSIBLE MANAGED BLOCK datagerry"
       block: |
-        check process mongod with pidfile /home/pacs/{{pac}}/users/{{user}}/var/run/datagerry.pid
+        check process datagerry with pidfile /home/pacs/{{pac}}/users/{{user}}/var/run/datagerry.pid
           start program "/home/pacs/{{pac}}/users/{{user}}/bin/datagerry-start.sh"
           stop program "/home/pacs/{{pac}}/users/{{user}}/bin/datagerry-stop.sh"
 
