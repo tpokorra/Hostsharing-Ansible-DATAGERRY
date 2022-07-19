@@ -1,0 +1,73 @@
+---
+#################################
+## setup the rabbitmq service
+# see https://www.rabbitmq.com/install-generic-unix.html
+#################################
+
+# on Hostsharing server:
+# dpkg -l | grep rabbit
+# shows: rabbitmq-server
+
+- name: create directory etc
+  become: yes
+  become_user: "{{pac}}-{{user}}"
+  file:
+    path: "/home/pacs/{{pac}}/users/{{user}}/etc"
+    state: directory
+
+- name: create directory var/rabbitmq/log
+  become: yes
+  become_user: "{{pac}}-{{user}}"
+  file:
+    path: "/home/pacs/{{pac}}/users/{{user}}/var/rabbitmq/log"
+    state: directory
+
+- name: upload rabbitmq env conf
+  # see https://www.rabbitmq.com/configure.html#configuration-files
+  become: yes
+  become_user: "{{pac}}-{{user}}"
+  template: dest="/home/pacs/{{pac}}/users/{{user}}/etc/rabbitmq-env.conf" src="templates/rabbitmq-env.conf" mode=0600
+
+- name: upload rabbitmq conf
+  # see https://www.rabbitmq.com/configure.html#configuration-files
+  become: yes
+  become_user: "{{pac}}-{{user}}"
+  template: dest="/home/pacs/{{pac}}/users/{{user}}/etc/rabbitmq.conf" src="templates/rabbitmq.conf" mode=0600
+
+- name: upload rabbitmq start script
+  become: yes
+  become_user: "{{pac}}-{{user}}"
+  template: dest="/home/pacs/{{pac}}/users/{{user}}/bin/" src="templates/rabbitmq-start.sh" mode=0700
+- name: upload rabbitmq stop script
+  become: yes
+  become_user: "{{pac}}-{{user}}"
+  template: dest="/home/pacs/{{pac}}/users/{{user}}/bin/" src="templates/rabbitmq-stop.sh" mode=0700
+
+- name: insert rabbitmq in monitrc
+  become: yes
+  become_user: "{{pac}}-{{user}}"
+  blockinfile:
+    dest: /home/pacs/{{pac}}/users/{{user}}/.monitrc
+    marker: "# {mark} ANSIBLE MANAGED BLOCK rabbitmq"
+    block: |
+      check process rabbitmq with MATCHING rabbitmq
+        start program "/home/pacs/{{pac}}/users/{{user}}/bin/rabbitmq-start.sh"
+        stop program "/home/pacs/{{pac}}/users/{{user}}/bin/rabbitmq-stop.sh"
+        if failed port {{rabbitmq_port}} type tcp then alert
+        if failed port {{rabbitmq_port}} type tcp then restart
+
+
+- name: insert rabbitmq in logrotate
+  become: yes
+  become_user: "{{pac}}-{{user}}"
+  blockinfile:
+    dest: /home/pacs/{{pac}}/users/{{user}}/.logrotate
+    marker: "# {mark} ANSIBLE MANAGED BLOCK rabbitmq"
+    block: |
+      /home/pacs/{{pac}}/users/{{user}}/var/rabbitmq/log/rabbitmq.log {
+          copytruncate
+          daily
+          rotate 7
+          compress
+          missingok
+      }

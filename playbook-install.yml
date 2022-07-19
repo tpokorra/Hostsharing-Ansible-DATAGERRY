@@ -44,6 +44,28 @@
       path: "/home/pacs/{{pac}}/users/{{user}}/var/run"
       state: directory
 
+  ##################################
+  ## other software configuration
+  ##################################
+  - name: upload monit configuration
+    become: yes
+    become_user: "{{pac}}-{{user}}"
+    template: dest="/home/pacs/{{pac}}/users/{{user}}/.monitrc" src="templates/monitrc" mode=0600 force=no
+
+  - name: upload logrotate configuration
+    become: yes
+    become_user: "{{pac}}-{{user}}"
+    template: dest="/home/pacs/{{pac}}/users/{{user}}/.logrotate" src="templates/logrotate" mode=0600 force=no
+
+  - name: upload datagerry start script
+    become: yes
+    become_user: "{{pac}}-{{user}}"
+    template: dest="/home/pacs/{{pac}}/users/{{user}}/bin" src="templates/datagerry-start.sh" mode=0700
+  - name: upload datagerry stop script
+    become: yes
+    become_user: "{{pac}}-{{user}}"
+    template: dest="/home/pacs/{{pac}}/users/{{user}}/bin" src="templates/datagerry-stop.sh" mode=0700
+
   #################################
   ## install requirements
   #################################
@@ -51,7 +73,8 @@
   - name: Install mongodb
     import_tasks: tasks/hs_mongodb.yml
 
-  # TODO install rabbitmq
+  - name: Install rabbitmq
+    import_tasks: tasks/hs_rabbitmq.yml
 
   ##################################
   ## install DATAGERRY
@@ -72,6 +95,7 @@
       src: "/home/pacs/{{pac}}/users/{{user}}/var/tmp/datagerry/files/datagerry"
       remote_src: yes
       dest: "/home/pacs/{{pac}}/users/{{user}}/bin/datagerry"
+      mode: '0700'
 
   ##################################
   ## configuration
@@ -87,8 +111,12 @@
   ########################
   ## setup the apache site
   ########################
-
-  # TODO
+  - name: upload .htaccess file
+    become: yes
+    become_user: "{{pac}}-{{user}}"
+    template:
+      src: "templates/htaccess"
+      dest: "/home/pacs/{{pac}}/users/{{user}}/doms/{{domain}}/htdocs-ssl/.htaccess"
 
   ####################################
   ## install cron jobs
@@ -101,9 +129,29 @@
       special_time: reboot
       job: rm -f $HOME/var/run/* && /usr/bin/monit -c "$HOME/.monitrc"
 
+  - name: run logrotate once a day
+    become: yes
+    become_user: "{{pac}}-{{user}}"
+    cron:
+      name: "logrotate"
+      minute: "{{random_minute}}"
+      hour: "1"
+      job: "/usr/sbin/logrotate -s $HOME/.logrotate.state $HOME/.logrotate"
+
   ##############################################
   ## start services via monit
   ##############################################
+  - name: insert datagerry in monitrc
+    become: yes
+    become_user: "{{pac}}-{{user}}"
+    blockinfile:
+      dest: /home/pacs/{{pac}}/users/{{user}}/.monitrc
+      marker: "# {mark} ANSIBLE MANAGED BLOCK datagerry"
+      block: |
+        check process mongod with pidfile /home/pacs/{{pac}}/users/{{user}}/var/run/datagerry.pid
+          start program "/home/pacs/{{pac}}/users/{{user}}/bin/datagerry-start.sh"
+          stop program "/home/pacs/{{pac}}/users/{{user}}/bin/datagerry-stop.sh"
+
   - name: start monit
     become: yes
     become_user: "{{pac}}-{{user}}"
