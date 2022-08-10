@@ -13,6 +13,8 @@ datagerry:
       rabbitmq_port: "5672"
       random_minute: "55"
 
-      mongodb_version: "5.0.9"
-      rabbitmq_version: "3.10.6"
+      # see https://github.com/mongodb/mongo/tags
+      mongodb_version: "5.0.10"
+
+      # see https://github.com/NETHINKS/DATAGERRY/releases
       datagerry_release: "1.7.2"
